@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Websocket Client</title>
+    <style>
+      #messages {
+        margin-top: 2em;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <input
+        type="text"
+        name=""
+        id="userName"
+        placeholder="Enter your user Name"
+      />
+      <button onclick="connect()">Connect</button>
+    </div>
+    <textarea id="messages" rows="20" cols="50" readonly></textarea>
+
+    <script>
+      let ws;
+      let userName;
+      const messageArea = document.getElementById("messages");
+
+      function connect() {
+        userName = document.getElementById("userName").value;
+        if (!userName) {
+          alert("Please provide userName");
+          return;
+        }
+
+        ws = new WebSocket("ws://localhost:8080");
+
+        ws.onopen = () => {
+          console.log("Connected to Websocket Server");
+          ws.send(JSON.stringify({ userName }));
+        };
+
+        ws.onmessage = (event) => {
+          console.log(event.data);
+          const message = JSON.parse(event.data);
+          displayMessage(message);
+        };
+
+        ws.onclose = () => {
+          console.log("Disconnected from WebSocket server");
+        };
+
+        ws.onerror = (error) => {
+          console.error("WebSocket error:", error);
+        };
+      }
+
+      function displayMessage(message) {
+        const formattedMessage = `
+        user: ${message.user}
+        problemId: ${message.problemId}
+        language: ${message.language}
+        result: ${message.result}
+        `;
+
+        // console.log(formattedMessage);
+
+        messageArea.value += formattedMessage + "\n";
+      }
+    </script>
+  </body>
+</html>
