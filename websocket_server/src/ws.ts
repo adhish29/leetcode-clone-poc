@@ -1,12 +1,17 @@
-import WebSocket, { WebSocketServer } from "ws";
+import { WebSocketServer } from "ws";
 import { createClient } from "redis";
 
-const client = createClient();
+const client = createClient({
+  socket: {
+    host: process.env.REDIS_HOST || "localhost",
+    port: Number(process.env.REDIS_PORT) || 6379,
+  },
+});
 const wss = new WebSocketServer({ port: 8080 });
 
 async function main() {
   wss.on("connection", (ws) => {
-    console.log("client connected");
+    console.log(`client connected to ${process.env.SERVER_NAME}`);
     ws.on("message", async (data) => {
       //   console.log(data.toString());
       const message = JSON.parse(data.toString());

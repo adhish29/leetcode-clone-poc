@@ -1,5 +1,11 @@
 import { createClient } from "redis";
-const client = createClient();
+
+const client = createClient({
+  socket: {
+    host: process.env.REDIS_HOST || "localhost",
+    port: Number(process.env.REDIS_PORT) || 6379,
+  },
+});
 
 function getResult() {
   const types = [
@@ -53,6 +59,7 @@ async function processSubmission(submission: string): Promise<{
         const submission = await client.brPop("problems", 0);
         // console.log(submission);
         const { user, problemId, language, result } = await processSubmission(
+          // @ts-ignore
           submission.element
         );
         await client.publish(

@@ -19,7 +19,12 @@ let i = 1;
 const users = ["adhish", "shloka"];
 
 const app = express();
-const client = createClient();
+const client = createClient({
+  socket: {
+    host: process.env.REDIS_HOST || "localhost",
+    port: Number(process.env.REDIS_PORT) || 6379,
+  },
+});
 client.on("error", (err) => console.log("Redis Client creation Error", err));
 
 app.use(express.json());

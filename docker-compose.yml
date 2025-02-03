@@ -1,0 +1,99 @@
+name: "leetCode-poc"
+services:
+  redis:
+    image: "redis:latest"
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+    networks:
+      - leetcode-network
+
+  primary_backend:
+    build:
+      context: backend
+      dockerfile: Dockerfile
+    ports:
+      - 4000:4000
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - leetcode-network
+
+  workers:
+    build:
+      context: worker
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    restart: always
+    networks:
+      - leetcode-network
+
+  ws1:
+    build:
+      context: websocket_server
+      dockerfile: Dockerfile
+    environment:
+      - SERVER_NAME=ws1
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    restart: always
+    networks:
+      - leetcode-network
+
+  ws2:
+    build:
+      context: websocket_server
+      dockerfile: Dockerfile
+    environment:
+      - SERVER_NAME=ws2
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    restart: always
+    networks:
+      - leetcode-network
+
+  ws3:
+    build:
+      context: websocket_server
+      dockerfile: Dockerfile
+    environment:
+      - SERVER_NAME=ws3
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    restart: always
+    networks:
+      - leetcode-network
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+    depends_on:
+      - ws1
+      - ws2
+      - ws3
+    networks:
+      - leetcode-network
+volumes:
+  redis_data:
+
+networks:
+  leetcode-network:
+    driver: bridge
